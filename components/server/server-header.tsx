@@ -28,7 +28,7 @@ interface ServerHeaderProps {
 export const ServerHeader = ({
   server,
   role,
-}: ServerWithMembersWithProfiles) => {
+}: ServerHeaderProps) => {
   const isAdmin = role === MemberRole.ADMIN;
   const isModerator = isAdmin || role === MemberRole.MODERATOR;
 
