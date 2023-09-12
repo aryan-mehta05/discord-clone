@@ -4,27 +4,28 @@ import axios from "axios";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
-
 import {
   Dialog,
+  DialogTitle,
+  DialogHeader,
+  DialogFooter,
   DialogContent,
   DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import {
+
+import  {
   Form,
-  FormControl,
-  FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormField,
+  FormControl,
+  FormMessage,
 } from "@/components/ui/form";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
+import { useModal } from "@/hooks/use-modal-store";
 import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
@@ -36,15 +37,12 @@ const formSchema = z.object({
   })
 });
 
-export const InitialModal = () => {
-  const [isMounted, setIsMounted] = useState(false);
-
+export const CreateServerModal = () => {
+  const { isOpen, onClose, type } = useModal();
   const router = useRouter();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
+  const isModalOpen = isOpen && type === "createServer";
+  
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,26 +52,27 @@ export const InitialModal = () => {
   });
 
   const isLoading = form.formState.isSubmitting;
-
+  
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.post("/api/servers", values);
-
+      
       form.reset();
       router.refresh();
-      window.location.reload();
+      onClose();
     } catch (error) {
       console.log(error);
     }
   }
 
-  if (!isMounted) {
-    return null;
+  const handleClose = () => {
+    form.reset();
+    onClose();
   }
-
+  
   return (
-    <Dialog open>
-      <DialogContent className="bg-white text-black p-0 overflow-hidden">
+    <Dialog open={isModalOpen} onOpenChange={handleClose}>
+      <DialogContent className="bg-white text-black- p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
             Customize your server
@@ -86,7 +85,7 @@ export const InitialModal = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-8 px-6">
               <div className="flex items-center justify-center text-center">
-                <FormField
+                <FormField 
                   control={form.control}
                   name="imageUrl"
                   render={({ field }) => (
@@ -103,7 +102,7 @@ export const InitialModal = () => {
                 />
               </div>
 
-              <FormField
+              <FormField 
                 control={form.control}
                 name="name"
                 render={({ field }) => (
@@ -114,7 +113,7 @@ export const InitialModal = () => {
                       Server name
                     </FormLabel>
                     <FormControl>
-                      <Input
+                      <Input 
                         disabled={isLoading}
                         className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0"
                         placeholder="Enter server name"
@@ -123,7 +122,7 @@ export const InitialModal = () => {
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )}
+                )} 
               />
             </div>
             <DialogFooter className="bg-gray-100 px-6 py-4">
@@ -136,4 +135,4 @@ export const InitialModal = () => {
       </DialogContent>
     </Dialog>
   )
-};
+}
